@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mem0 + Gemini Chat</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        #chat { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 1rem; margin-bottom: 1rem; }
+        .msg { margin-bottom: 1rem; }
+        .memories { font-size: 0.8em; color: #555; background: #f0f0f0; padding: 0.5rem; border-radius: 4px; }
+        .error { color: red; font-weight: bold; }
+        .input-row { display: flex; gap: 0.5rem; }
+        input[type="text"] { flex: 1; padding: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h3>Mem0 + Gemini Assistant</h3>
+    <div style="margin-bottom: 1rem;">
+        <label>User ID: </label>
+        <input type="text" id="userId" value="user_123">
+    </div>
+    <div id="chat"></div>
+    <div class="input-row">
+        <input type="text" id="message" placeholder="Type a message..." onkeydown="if(event.key==='Enter') send()">
+        <button onclick="send()">Send</button>
+    </div>
+
+    <script>
+        async function send() {
+            const userId = document.getElementById('userId').value;
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+            if (!message) return;
+
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<div class="msg"><strong>You:</strong> ${message}</div>`;
+            messageInput.value = '';
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, message: message })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Server returned status ${res.status}`);
+                }
+
+                const data = await res.json();
+
+                let memHtml = '';
+                if (data.memories_used && data.memories_used.length > 0) {
+                    memHtml = `<details class="memories"><summary>Memories recalled (${data.memories_used.length})</summary>${data.memories_used.join('<br>')}</details>`;
+                }
+
+                chat.innerHTML += `<div class="msg"><strong>Bot:</strong> ${data.reply}${memHtml}</div>`;
+            } catch (err) {
+                chat.innerHTML += `<div class="msg error"><strong>Error:</strong> ${err.message}</div>`;
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>

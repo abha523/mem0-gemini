@@ -1,0 +1,16 @@
+# Environment variables and keys
+.env
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Local Vector Store and Memory Databases
+qdrant_data/
+*.db
+*.sqlite
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
