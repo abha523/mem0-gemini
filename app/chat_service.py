@@ -16,6 +16,9 @@ def generate_reply(user_msg: str, memories: list[str]) -> str:
     response = client.models.generate_content(
         model=CHAT_MODEL,
         contents=user_msg,
-        config=types.GenerateContentConfig(system_instruction=system_instruction),
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            tools=[{"google_search": {}}],
+        ),
     )
     return response.text
